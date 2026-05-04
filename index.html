@@ -1,28 +1,371 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Libas Review AI</title>
+  <style>
+    :root {
+      --obsidian: #0D0D0D;
+      --crimson: #6B1029;
+      --silver: #C0C0C8;
+      --ivory: #F5F0EC;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--obsidian);
+      color: var(--ivory);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--ivory);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      border-bottom: 2px solid var(--crimson);
+      padding-bottom: 10px;
+      text-align: center;
+    }
+
+    .container {
+      background-color: rgba(245, 240, 236, 0.05);
+      border: 1px solid var(--crimson);
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 1.1em;
+      color: var(--silver);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Rating Stars */
+    .rating-container {
+      display: flex;
+      gap: 10px;
+      font-size: 2em;
+      cursor: pointer;
+    }
+    .star {
+      color: var(--silver);
+      transition: color 0.2s;
+    }
+    .star.active {
+      color: var(--crimson);
+    }
+
+    /* Topics */
+    .topics-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topic-tag {
+      background-color: transparent;
+      border: 1px solid var(--silver);
+      color: var(--silver);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .topic-tag.selected {
+      background-color: var(--crimson);
+      color: var(--ivory);
+      border-color: var(--crimson);
+    }
+
+    /* Language Select */
+    select {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--obsidian);
+      color: var(--ivory);
+      border: 1px solid var(--silver);
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--crimson);
+    }
+
+    /* Generate Button */
+    .btn-generate {
+      width: 100%;
+      padding: 15px;
+      background-color: var(--crimson);
+      color: var(--ivory);
+      border: none;
+      border-radius: 4px;
+      font-size: 1.2em;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background-color 0.3s;
+      margin-top: 10px;
+    }
+
+    .btn-generate:hover {
+      background-color: #8a1535;
+    }
+
+    .btn-generate:disabled {
+      background-color: #4a0b1c;
+      color: var(--silver);
+      cursor: not-allowed;
+    }
+
+    /* Output Area */
+    .reviews-container {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .review-card {
+      background-color: var(--ivory);
+      color: var(--obsidian);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 5px solid var(--crimson);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .review-text {
+      font-size: 1.05em;
+      line-height: 1.5;
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-copy {
+      background-color: transparent;
+      color: var(--crimson);
+      border: 1px solid var(--crimson);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .btn-copy:hover {
+      background-color: var(--crimson);
+      color: var(--ivory);
+    }
+
+    /* Maps Button */
+    .maps-link-container {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .btn-maps {
+      display: inline-block;
+      background-color: transparent;
+      color: var(--silver);
+      border: 1px solid var(--silver);
+      padding: 12px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 1.1em;
+      transition: all 0.3s;
+    }
+
+    .btn-maps:hover {
+      border-color: var(--ivory);
+      color: var(--ivory);
+    }
+
+    #loading {
+      display: none;
+      text-align: center;
+      color: var(--silver);
+      margin-top: 20px;
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif;background:#111;color:#fff;text-align:center;padding:40px">
-  <h1>Libas AI Review Generator</h1>
-  <button onclick="generate()">Generate Review</button>
-  <pre id="output"></pre>
+<body>
+
+  <h1>Libas Men's Wear</h1>
+
+  <div class="container">
+    <div class="section">
+      <div class="section-title">Your Experience (Rating)</div>
+      <div class="rating-container" id="ratingContainer">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star active" data-value="5">★</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">What did you like?</div>
+      <div class="topics-container" id="topicsContainer">
+        <div class="topic-tag" data-topic="Sherwani">Sherwani</div>
+        <div class="topic-tag" data-topic="Kurta">Kurta</div>
+        <div class="topic-tag" data-topic="Suits">Suits</div>
+        <div class="topic-tag" data-topic="Fabric Quality">Fabric Quality</div>
+        <div class="topic-tag" data-topic="Fitting">Fitting</div>
+        <div class="topic-tag" data-topic="Customer Service">Customer Service</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Review Language</div>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="ur">Urdu</option>
+      </select>
+    </div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generate()">Generate Reviews</button>
+    <div id="loading">Crafting the perfect review...</div>
+  </div>
+
+  <div class="reviews-container" id="reviewsContainer">
+    <!-- Reviews will be injected here -->
+  </div>
+
+  <div class="maps-link-container">
+    <a href="https://share.google/qSEdsVnBxCWOtRhui" target="_blank" class="btn-maps">Open Google Maps to Review</a>
+  </div>
 
 <script>
-async function generate(){
-  const res = await fetch("/generate-review",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      rating:5,
-      topics:["sherwani"],
-      language:"en"
-    })
+  let currentRating = 5;
+  const selectedTopics = new Set();
+
+  // Rating Logic
+  const stars = document.querySelectorAll('.star');
+  stars.forEach(star => {
+    star.addEventListener('click', (e) => {
+      currentRating = parseInt(e.target.dataset.value);
+      updateStars();
+    });
   });
 
-  const data = await res.json();
-  document.getElementById("output").innerText = data.reviews;
-}
+  function updateStars() {
+    stars.forEach(star => {
+      if (parseInt(star.dataset.value) <= currentRating) {
+        star.classList.add('active');
+      } else {
+        star.classList.remove('active');
+      }
+    });
+  }
+  updateStars();
+
+  // Topics Logic
+  const topicTags = document.querySelectorAll('.topic-tag');
+  topicTags.forEach(tag => {
+    tag.addEventListener('click', (e) => {
+      const el = e.target;
+      const topic = el.dataset.topic;
+      if (selectedTopics.has(topic)) {
+        selectedTopics.delete(topic);
+        el.classList.remove('selected');
+      } else {
+        selectedTopics.add(topic);
+        el.classList.add('selected');
+      }
+    });
+  });
+
+  async function generate(){
+    const btn = document.getElementById('generateBtn');
+    const loading = document.getElementById('loading');
+    const container = document.getElementById('reviewsContainer');
+    const language = document.getElementById('languageSelect').value;
+
+    let topicsArray = Array.from(selectedTopics);
+    if (topicsArray.length === 0) {
+      topicsArray = ["General Experience"]; // Default if none selected
+    }
+
+    btn.disabled = true;
+    loading.style.display = "block";
+    container.innerHTML = "";
+
+    try {
+      const res = await fetch("/generate-review",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          rating: currentRating,
+          topics: topicsArray,
+          language: language
+        })
+      });
+
+      const data = await res.json();
+
+      if(data.reviews && Array.isArray(data.reviews)){
+        data.reviews.forEach((reviewText, index) => {
+          const card = document.createElement('div');
+          card.className = 'review-card';
+
+          const textDiv = document.createElement('div');
+          textDiv.className = 'review-text';
+          textDiv.innerText = reviewText;
+
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'card-actions';
+
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'btn-copy';
+          copyBtn.innerText = 'Copy';
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(reviewText);
+            copyBtn.innerText = 'Copied!';
+            setTimeout(() => copyBtn.innerText = 'Copy', 2000);
+          };
+
+          actionsDiv.appendChild(copyBtn);
+          card.appendChild(textDiv);
+          card.appendChild(actionsDiv);
+          container.appendChild(card);
+        });
+      } else {
+         container.innerHTML = `<div class="review-card" style="color:var(--crimson)">Failed to parse reviews. Please try again.</div>`;
+      }
+    } catch(err) {
+       container.innerHTML = `<div class="review-card" style="color:var(--crimson)">An error occurred. Please try again later.</div>`;
+    } finally {
+      btn.disabled = false;
+      loading.style.display = "none";
+    }
+  }
 </script>
 </body>
 </html>
