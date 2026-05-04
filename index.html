@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Libas Review AI</title>
+</head>
+<body style="font-family:sans-serif;background:#111;color:#fff;text-align:center;padding:40px">
+  <h1>Libas AI Review Generator</h1>
+  <button onclick="generate()">Generate Review</button>
+  <pre id="output"></pre>
+
+<script>
+async function generate(){
+  const res = await fetch("http://localhost:3000/generate-review",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      rating:5,
+      topics:["sherwani"],
+      language:"en"
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("output").innerText = data.reviews;
+}
+</script>
+</body>
+</html>
