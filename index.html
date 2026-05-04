@@ -10,7 +10,7 @@
 
 <script>
 async function generate(){
-  const res = await fetch("http://localhost:3000/generate-review",{
+  const res = await fetch("/generate-review",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({

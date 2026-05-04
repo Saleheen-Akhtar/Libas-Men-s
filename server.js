@@ -1,12 +1,21 @@
 import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import cors from "cors";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+app.get("/", (req, res) => {
+  res.sendFile(join(__dirname, "index.html"));
+});
 
 app.post("/generate-review", async (req, res) => {
   try {
@@ -35,4 +44,8 @@ Details:
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+if (process.env.VERCEL !== "1") {
+  app.listen(3000, () => console.log("Server running on port 3000"));
+}
+
+export default app;
